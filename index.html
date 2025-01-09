@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        canvas {
+            border: 1px solid black;
+            display: block;
+            margin: 20px auto;
+        }
+        .score {
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Snake Game</h1>
+    <div class="score">Score: <span id="score">0</span></div>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        const gridSize = 20;
+        const canvasSize = 400;
+        let snake = [{ x: 100, y: 100 }];
+        let snakeDirection = { x: gridSize, y: 0 };
+        let food = { x: 200, y: 200 };
+        let score = 0;
+        let gameInterval;
+
+        // Draw the snake and food
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw food
+            ctx.fillStyle = "red";
+            ctx.fillRect(food.x, food.y, gridSize, gridSize);
+
+            // Draw snake
+            ctx.fillStyle = "green";
+            snake.forEach(segment => {
+                ctx.fillRect(segment.x, segment.y, gridSize, gridSize);
+            });
+
+            // Draw score
+            document.getElementById("score").innerText = score;
+        }
+
+        // Update the game logic
+        function update() {
+            const head = { x: snake[0].x + snakeDirection.x, y: snake[0].y + snakeDirection.y };
+
+            // Check for wall collisions
+            if (head.x < 0 || head.y < 0 || head.x >= canvasSize || head.y >= canvasSize) {
+                clearInterval(gameInterval);
+                alert("Game Over! Your score: " + score);
+                return;
+            }
+
+            // Check for snake collisions with itself
+            for (let i = 1; i < snake.length; i++) {
+                if (snake[i].x === head.x && snake[i].y === head.y) {
+                    clearInterval(gameInterval);
+                    alert("Game Over! Your score: " + score);
+                    return;
+                }
+            }
+
+            snake.unshift(head);
+
+            // Check if the snake eats food
+            if (head.x === food.x && head.y === food.y) {
+                score++;
+                placeFood();
+            } else {
+                snake.pop();
+            }
+
+            draw();
+        }
+
+        // Place food randomly
+        function placeFood() {
+            const x = Math.floor(Math.random() * (canvasSize / gridSize)) * gridSize;
+            const y = Math.floor(Math.random() * (canvasSize / gridSize)) * gridSize;
+            food = { x, y };
+        }
+
+        // Control the snake direction
+        function changeDirection(event) {
+            if (event.key === "ArrowUp" && snakeDirection.y === 0) {
+                snakeDirection = { x: 0, y: -gridSize };
+            } else if (event.key === "ArrowDown" && snakeDirection.y === 0) {
+                snakeDirection = { x: 0, y: gridSize };
+            } else if (event.key === "ArrowLeft" && snakeDirection.x === 0) {
+                snakeDirection = { x: -gridSize, y: 0 };
+            } else if (event.key === "ArrowRight" && snakeDirection.x === 0) {
+                snakeDirection = { x: gridSize, y: 0 };
+            }
+        }
+
+        // Start the game
+        function startGame() {
+            snake = [{ x: 100, y: 100 }];
+            snakeDirection = { x: gridSize, y: 0 };
+            score = 0;
+            placeFood();
+            gameInterval = setInterval(update, 100);
+        }
+
+        // Add event listener for arrow keys
+        document.addEventListener("keydown", changeDirection);
+
+        // Start a new game when page is loaded
+        startGame();
+    </script>
+</body>
+</html>
